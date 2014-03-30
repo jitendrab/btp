@@ -1,0 +1,24 @@
+BASEDIR = /home/jitu/btp/iitm/preprocessing
+SRCDIR = ../src
+DSPLIB = ../src
+OBJDIR = ../obj
+BINDIR = ../bin
+
+all:$(BINDIR)/diarization
+
+$(BINDIR)/diarization: $(OBJDIR)/preprocessing.o $(OBJDIR)/VQ_Modified.o $(OBJDIR)/GMM.o $(OBJDIR)/viterbi_realign.o
+	gcc $(OBJDIR)/preprocessing.o $(OBJDIR)/VQ_Modified.o $(OBJDIR)/GMM.o $(OBJDIR)/viterbi_realign.o -o $(BINDIR)/diarization
+
+$(OBJDIR)/viterbi_realign.o: $(SRCDIR)/viterbi_realign.c
+	gcc -c $(SRCDIR)/viterbi_realign.c
+
+$(OBJDIR)/GMM.o: $(SRCDIR)/GMM.c
+	gcc -c $(SRCDIR)/GMM.c
+
+$(OBJDIR)/VQ_Modified.o: $(SRCDIR)/VQ_Modified.c
+	gcc -c $(SRCDIR)/VQ_Modified.c
+
+$(OBJDIR)/preprocessing.o: $(SRCDIR)/preprocessing.c
+	gcc -c $(SRCDIR)/preprocessing.c
+clean: rm $(OBJDIR)/*.o
+	rm bin/diarization

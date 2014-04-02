@@ -51,7 +51,7 @@ int* viterbi( VECTOR_OF_F_VECTORS *features,           int *numStates,          
     }
   }
   int *Z = (int *)calloc(totalNumFeatures, sizeof(int));
-  
+  // there is an logical algorithmic error in below code 
   for(i = 0; i < totalNumFeatures; i++){
     float max_prob = -9999999;
     max_prob_state = 0;

@@ -22,8 +22,8 @@ int* viterbi( VECTOR_OF_F_VECTORS *features,           int *numStates,          
   //clear any remainings
   for(i = 0; i < *numStates; i++){
     for(j = 0; j < totalNumFeatures; j++){
-      T1[i][j] = 0.0;
-      T2[i][j] = 0;
+      T1[i][j] = 0.0; //T1 as delta matrix(in book)
+      T2[i][j] = 0;  // T2 as Si matrix
     }
   }
   for(i = 0; i < (*numStates); i++){
@@ -40,33 +40,31 @@ int* viterbi( VECTOR_OF_F_VECTORS *features,           int *numStates,          
       int max_prob_state = 0;
       //printf(" %f  ", B[j][i]);
       for(k = 0; k < (*numStates); k++){
-	if(( T1[k][i-1] + A + B[j][i]) > max_prob){
-	  max_prob = T1[k][i-1] + A + B[j][i];
+	if((T1[k][i-1] + A ) > max_prob){
+	  max_prob = T1[k][i-1] + A;
 	  max_prob_state = k;
 	}
       }
-      T1[j][i] = max_prob;
+      T1[j][i] = max_prob + B[j][i];
       T2[j][i] = max_prob_state;
       //printf("max_prob_state: %d\n", max_prob_state);
     }
   }
   int *Z = (int *)calloc(totalNumFeatures, sizeof(int));
   // there is an logical algorithmic error in below code 
-  for(i = 0; i < totalNumFeatures; i++){
-    float max_prob = -9999999;
-    max_prob_state = 0;
-    for(k = 0; k < (*numStates); k++){
-      if( T1[k][i] > max_prob){
-	max_prob = T1[k][i];
-	max_prob_state = k;
-      }
+  float max_prob = -999999;
+  int max_state = 0;
+  for(i = 0; i < *numStates; i++){
+    if( T1[i][totalNumFeatures-1] > max_prob){
+      max_prob = T1[i][totalNumFeatures-1];
+      max_state = i;
     }
-    Z[i] = max_prob_state;
   }
-  hiddenStateSeq[totalNumFeatures - 1] = max_prob_state;
-  for(i = totalNumFeatures - 1; i > 0; i--){
-    int s = Z[i-1];
-    hiddenStateSeq[i-1] = T2[s][i];
+  hiddenStateSeq[totalNumFeatures-1] = max_state;
+  int t = 0;
+  for(t = totalNumFeatures-2; t >= 0; t--){
+    int idx = hiddenStateSeq[t+1];
+    hiddenStateSeq[t] = T2[idx][t+1];
   }
   
   return CheckMinDuration(features , hiddenStateSeq,           numStates,               allMixtureMeans,            allMixtureVars, 

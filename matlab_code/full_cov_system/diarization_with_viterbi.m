@@ -23,104 +23,104 @@ si = zeros(numStates, featureCount);
 %==========================================================================
 % ++++++++++++++++++++Uniform Initialization+++++++++++++++++++++++++++++++
 % Initialize each STATE with a Gaussian having full covariance matrix
-% [allStateMeans, allStateVars] = InitializeAllStates(data containing all voiced feature vectors, initial
-% no of states, array containg means for each state, matrix containing
-% covariance matrix for each state) ;
+%[allStateMeans, allStateVars] = InitializeAllStates(data containing all voiced feature vectors, initial
+%no of states, array containg means for each state, matrix containing
+%covariance matrix for each state) ;
 %[allStateMeans, allStateVars] = InitializeAllStates(data, INITIAL_NUM_STATES, allStateMeans, allStateVars, featureCount);
-% j = 1;
-% block = featureCount/ INITIAL_NUM_STATES;
-% block = int32(block);
-% x = zeros(block, 19);
-% stateSequence = zeros(featureCount, 1);
-% for s=1:INITIAL_NUM_STATES
-%     i = 1;
-%     for j=(s-1)*block+1:s*block
-%         x(i, :) = data(j, :);
-%         stateSequence(j, 1) = s;
-%         i = i+1;
-%     end
-%     disp(size(x));    
-%     mu = mean(x);
-%     c = cov(x);
-%     % we should store obtained mean and variance into all mixture means and
-%     % variances
-%     allStateMeans(s, :) = mu(1, :);
-%     allStateVars(s, :, :) = c(:, :);
-% end
-% 
-% voicedData = zeros(featureCount, DIM);
-% for i = 1:featureCount
-%     voicedData(i, :) = data(i, :);
-% end
-% log_prob = zeros( INITIAL_NUM_STATES, featureCount);
-% 
-% % calculate log probability for every feature vector
-% for s = 1: numStates
-%     sigma = squeeze(allStateVars(s, :, :));
-%     prob = mvnpdf(voicedData, allStateMeans(s, :), sigma);
-%     prob = log(prob);
-%     log_prob(s, :) = prob;
-% end
-% numElemEachState = zeros(numStates, 1);
-% pi = zeros(numStates, 1);
-% for i = 1: numStates
-%     numElemEachState(i, 1) = int32(featureCount/numStates);
-% end
-% %
-% 
-% for i = 1: numStates
-%     pi(i, 1) = log(numElemEachState(i, 1)/featureCount);
-% end
-%==========================================================================
-% ++++++++++++++++++++ KMeans Initialization+++++++++++++++++++++++++++++++
-voicedData = zeros(featureCount, DIM);
-% size of data matrix is large 
-for i = 1:featureCount
-    voicedData(i, :) = data(i, :);
-end
+j = 1;
+block = featureCount/ INITIAL_NUM_STATES;
+block = int32(block);
+x = zeros(block, 19);
 stateSequence = zeros(featureCount, 1);
-stateSequence = kmeans(voicedData, numStates, 'start', 'uniform');
-numElemEachState = zeros(numStates, 1);
-pi = zeros(numStates, 1);
-
-for i = 1:featureCount
-    idx = stateSequence(i, 1);
-    numElemEachState(idx, 1) = numElemEachState(idx, 1) + 1;
-end
-for s=1:numStates
-    count = 1;
-    clear tempData;
-    tempData = zeros(numElemEachState(s, 1), DIM);
-    for i = 1:featureCount
-        if stateSequence(i, 1) == s
-            tempData(count, :) = data(i, :);
-        end
+for s=1:INITIAL_NUM_STATES
+    i = 1;
+    for j=(s-1)*block+1:s*block
+        x(i, :) = data(j, :);
+        stateSequence(j, 1) = s;
+        i = i+1;
     end
-    % cluster whole data using single gaussian with full covariance matrix
-    mu = mean(tempData);
-    c = cov(tempData);
-    c = c + 0.0001 * eye(19);
+    disp(size(x));    
+    mu = mean(x);
+    c = cov(x);
     % we should store obtained mean and variance into all mixture means and
     % variances
     allStateMeans(s, :) = mu(1, :);
     allStateVars(s, :, :) = c(:, :);
 end
 
+voicedData = zeros(featureCount, DIM);
+for i = 1:featureCount
+    voicedData(i, :) = data(i, :);
+end
 log_prob = zeros( INITIAL_NUM_STATES, featureCount);
 
 % calculate log probability for every feature vector
-
 for s = 1: numStates
     sigma = squeeze(allStateVars(s, :, :));
     prob = mvnpdf(voicedData, allStateMeans(s, :), sigma);
     prob = log(prob);
     log_prob(s, :) = prob;
 end
+numElemEachState = zeros(numStates, 1);
+pi = zeros(numStates, 1);
+for i = 1: numStates
+    numElemEachState(i, 1) = int32(featureCount/numStates);
+end
+%
 
 for i = 1: numStates
     pi(i, 1) = log(numElemEachState(i, 1)/featureCount);
 end
+%==========================================================================
+% % ++++++++++++++++++++ KMeans Initialization+++++++++++++++++++++++++++++++
+% voicedData = zeros(featureCount, DIM);
+% % size of data matrix is large 
+% for i = 1:featureCount
+%     voicedData(i, :) = data(i, :);
+% end
+% stateSequence = zeros(featureCount, 1);
+% stateSequence = kmeans(voicedData, numStates, 'start', 'uniform');
+% numElemEachState = zeros(numStates, 1);
+% pi = zeros(numStates, 1);
+% 
+% for i = 1:featureCount
+%     idx = stateSequence(i, 1);
+%     numElemEachState(idx, 1) = numElemEachState(idx, 1) + 1;
+% end
+% for s=1:numStates
+%     count = 1;
+%     clear tempData;
+%     tempData = zeros(numElemEachState(s, 1), DIM);
+%     for i = 1:featureCount
+%         if stateSequence(i, 1) == s
+%             tempData(count, :) = data(i, :);
+%         end
+%     end
+%     % cluster whole data using single gaussian with full covariance matrix
+%     mu = mean(tempData);
+%     c = cov(tempData);
+%     c = c + 0.0001 * eye(19);
+%     % we should store obtained mean and variance into all mixture means and
+%     % variances
+%     allStateMeans(s, :) = mu(1, :);
+%     allStateVars(s, :, :) = c(:, :);
+% end
 
+% log_prob = zeros( INITIAL_NUM_STATES, featureCount);
+% 
+% % calculate log probability for every feature vector
+% 
+% for s = 1: numStates
+%     sigma = squeeze(allStateVars(s, :, :));
+%     prob = mvnpdf(voicedData, allStateMeans(s, :), sigma);
+%     prob = log(prob);
+%     log_prob(s, :) = prob;
+% end
+% 
+% for i = 1: numStates
+%     pi(i, 1) = log(numElemEachState(i, 1)/featureCount);
+% end
+% 
 %==========================================================================
 % Clustering and Merging step :- this step will include viterbi realignment
 % , Reclustering of all states using Expectation maximization, calculation
@@ -130,8 +130,9 @@ mergeIter = 0;
 iterFlag = 1;
 
 
-while numStates > 0 && mergeIter < MAX_MERGE_ITER && iterFlag == 1
+while numStates > 1 && mergeIter < MAX_MERGE_ITER && iterFlag == 1
     % VITERBI REALIGNMENT
+    disp('performing viterbi realignment...');
     [stateSequence, numElemEachState, delta, si] = viterbi_realign(log_prob, pi, numStates, featureCount, numElemEachState, delta, si);
     %==========================================================================
     % APPLY MIN_DURATION constraint on viterbi realignment

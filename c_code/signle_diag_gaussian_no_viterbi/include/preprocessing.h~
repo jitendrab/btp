@@ -10,7 +10,7 @@
 #include "DspLibrary.h"
 #include "GMM.h"
 #include "VQ_Modified.h"
-#include "viterbi_realign.h"
+//#include "viterbi_realign.h"
 #include <math.h>
 
 #include "config_single.h"  //for single gaussian

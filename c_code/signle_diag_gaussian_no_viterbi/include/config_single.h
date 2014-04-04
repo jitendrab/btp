@@ -8,6 +8,6 @@
 #define MAX_NUM_MIX 100
 #define INITIAL_NUM_MIX 1 //single gaussian
 #define LAMBDA 9
-#define INITIAL_STATES 32
+#define INITIAL_STATES 16
 
 #endif

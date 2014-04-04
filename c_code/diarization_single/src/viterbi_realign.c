@@ -11,14 +11,12 @@
 
 int* viterbi( VECTOR_OF_F_VECTORS *features,           int *numStates,                    VECTOR_OF_F_VECTORS *allMixtureMeans, 
 	      VECTOR_OF_F_VECTORS *allMixtureVars,     int totalNumFeatures,              float **B,        int *numElemEachState,
-	      float *T1[],                             int *T2[],                         float *Pi){
+	      float *T1[],                             int *T2[],                         float *Pi, int *hiddenStateSeq){
   
   //use numElemEachState for minimum duration constraint
   int                              i = 0, j = 0, k = 0;
   float A                          = (-1) * log(*numStates); // uniform transition probabilities
-  int                              *hiddenStateSeq;
   int                              max_prob_state;
-  hiddenStateSeq = (int *)calloc(totalNumFeatures, sizeof(int));
   //clear any remainings
   for(i = 0; i < *numStates; i++){
     for(j = 0; j < totalNumFeatures; j++){
@@ -66,10 +64,10 @@ int* viterbi( VECTOR_OF_F_VECTORS *features,           int *numStates,          
     int idx = hiddenStateSeq[t+1];
     hiddenStateSeq[t] = T2[idx][t+1];
   }
-  
-  return CheckMinDuration(features , hiddenStateSeq,           numStates,               allMixtureMeans,            allMixtureVars, 
+  return hiddenStateSeq;
+  /*return CheckMinDuration(features , hiddenStateSeq,           numStates,               allMixtureMeans,            allMixtureVars, 
 			  totalNumFeatures,        B,                          numElemEachState,
-			  T1,                       T2,                      Pi);
+			  T1,                       T2,                      Pi);*/
 }
 
 
@@ -82,30 +80,37 @@ int* viterbi( VECTOR_OF_F_VECTORS *features,           int *numStates,          
 
    outputs : check for minimum duration and drops any state which has less than MIN_DUR frames 
 ******************************************************************************/
-int* CheckMinDuration(VECTOR_OF_F_VECTORS *features,                    int *hiddenStateSeq,                   int *numStates, 
-		      VECTOR_OF_F_VECTORS *allMixtureMeans,             VECTOR_OF_F_VECTORS *allMixtureVars,  int totalNumFeatures,
-		      float **B, int *numElemEachState, float *T1[], int *T2[], float *Pi){
-  
-  FindNumberOfElemInEachState(hiddenStateSeq, numStates, totalNumFeatures,  numElemEachState, Pi);
-  // check min duration constraint 
-  int              i = 0, j = 0, s = 0, d= 0, mixCount = 0;
-  for(s = 0; s < *numStates; s++){
-    if( numElemEachState[s] < MIN_DUR ){
-      printf("dropping state: %d ....does not contain enough elements...\n", s);
-      //drop the state
-      *numStates -= 1;
-      for(i = s; i < *numStates; i++){
-	for(j = 0; j < DIM; j++){
-	  allMixtureMeans[i][j] = allMixtureMeans[i+1][j];
-	  allMixtureVars[i][j] = allMixtureVars[i+1][j];
-	}      
+int* CheckMinDuration(    int *hiddenStateSeq,                   int *numStates, 
+			  int numFeatures,		      float **B){
+  int                 i = 0, j = 0, s = 0;
+  float *segProb = (float *)calloc(*numStates, sizeof(float ));
+  //divide all voiced feature space into MIN_DUR segments
+  printf("applying min-duration constraint....\n");
+  for(j = 0; j < numFeatures/MIN_DUR; j++){
+    for(s = 0; s < *numStates; s++)
+      segProb[s] = 0.0;
+    
+    for(s = 0; s < *numStates; s++){
+      for(i = j*MIN_DUR; i < numFeatures, i < (j+1) * MIN_DUR; i++){
+	// this i will be a single block or segment
+	segProb[s] += B[s][i];
       }
-      // first compute new posterior probs for each element
-      ComputePosteriorProb(features,    B,      allMixtureMeans,       allMixtureVars,     numStates,         totalNumFeatures);
-      // Now call viterbi alginment again 
-      return viterbi(  features, numStates,       allMixtureMeans,      allMixtureVars,            totalNumFeatures,
-		       B,                numElemEachState,        T1,           T2,                  Pi);
-    }//matches if 
+    }
+    //find max_state 
+    double max = -9999999;
+    int max_s = 0;
+    for(s = 0; s < *numStates; s++){
+      if(segProb[s] > max){
+	max = segProb[s];
+	max_s = s;
+      }
+    }
+    //max_s is the state where this segment should belong
+    for(i = j*MIN_DUR; i < numFeatures, i < (j+1) * MIN_DUR; i++){
+      // this i will be a single block or segment
+      hiddenStateSeq[i] = max_s;
+    }
   }
+  free(segProb);
   return hiddenStateSeq;
 }

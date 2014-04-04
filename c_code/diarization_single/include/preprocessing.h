@@ -13,8 +13,7 @@
 #include "viterbi_realign.h"
 #include <math.h>
 
-//#include "config_single.h"  //for single gaussian
-#include "config_multi.h"  //for multi gaussian
+#include "config_single.h"  //for single gaussian
 //globals
 VECTOR_OF_F_VECTORS                  *mixtureMeans, *mixtureVars;
 F_VECTOR                             *mean;
@@ -25,19 +24,21 @@ char                                 fileName[100];
 float                                probScaleFactor = 1.0;
 int                                  ditherMean = 1;
 int                                  varianceNormalize = 1;
-int                                  featureSpace[MAX_NUM_FEATURES][3];
+
+int dfs = 0;
+int                                  **featureSpace;
 int                                  allFeaturesCount = 0;
 //function prototypes 
 
-void InitializeGMMs(VECTOR_OF_F_VECTORS *, int , int , int *);
+int InitializeGMMs(VECTOR_OF_F_VECTORS *, int , int , int *);
 
 void ComputePosteriorProb( VECTOR_OF_F_VECTORS *features, float **posterior, VECTOR_OF_F_VECTORS *allMixtureMeans, 
 			   VECTOR_OF_F_VECTORS *allMixtureVars, int *numStates,  int );
 
-void ClusteringAndMerging(VECTOR_OF_F_VECTORS *features,          VECTOR_OF_F_VECTORS *allMixtureMeans,    
-			  VECTOR_OF_F_VECTORS *allMixtureVars,               int *numStates,   
-			  int totalNumFeatures,         float **posterior,   int *numElemEachState,
-			  float *Pi);
+int ClusteringAndMerging(VECTOR_OF_F_VECTORS *features,          VECTOR_OF_F_VECTORS *allMixtureMeans,    
+			 VECTOR_OF_F_VECTORS *allMixtureVars,               int *numStates,   
+			 int totalNumFeatures,         float **posterior,   int *numElemEachState,
+			 float *Pi);
 
 //void CalculateBIC(float **BIC, VECTOR_OF_F_VECTORS *,    int *numStates,  float **posterior, int totalNumFeatures, int *stateSeq, int *numMixEachState,               int *numElemEachState);
 
@@ -65,9 +66,9 @@ void MergeTwoStatesModified( int s_i,  int s_j  , VECTOR_OF_F_VECTORS *allMixtur
 			     int *numElemEachState,                    float *Pi,          int totalNumFeatures,
 			     VECTOR_OF_F_VECTORS *features, int *stateSeq);
 
-void writeRTTMFile(int *stateSeq, int *numStates, int totalNumFeatures, int *numElemEachState);
+int writeRTTMFile(int *stateSeq, int *numStates, int totalNumFeatures, int *numElemEachState);
 
-void writePlotFile(float **posterior, int totalNumFeatures, int *numStates);
+int writePlotFile(float **posterior, int totalNumFeatures, int *numStates, int *);
 
 void PrintAllDetails(int *numStates, int *numMixEachState, int *numElemEachState, 
 		     float **mixtureElemCount, VECTOR_OF_F_VECTORS *allMixtureMeans, float *mixtureWeight);

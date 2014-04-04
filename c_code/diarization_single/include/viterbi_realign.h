@@ -13,11 +13,11 @@
 #include "../include/DspLibrary.h"
 #include "../include/GMM.h"
 #include "../include/VQ_Modified.h"
-#include "../include/config_multi.h"
+#include "../include/config_single.h"
 #include <math.h>
 //#include "../include/preprocessing.h"
 
-int* viterbi( VECTOR_OF_F_VECTORS *features,    int *numStates,          VECTOR_OF_F_VECTORS *allMixtureMeans,                       VECTOR_OF_F_VECTORS *allMixtureVars,           int totalNumFeatures,              float **B,           int *numElemEachState,                          float *T1[],               int *T2[],                          float *Pi);
+int* viterbi( VECTOR_OF_F_VECTORS *features,    int *numStates,          VECTOR_OF_F_VECTORS *allMixtureMeans,                       VECTOR_OF_F_VECTORS *allMixtureVars,           int totalNumFeatures,              float **B,           int *numElemEachState,                          float *T1[],               int *T2[],                          float *Pi,         int *);
 
-int* CheckMinDuration(VECTOR_OF_F_VECTORS *features,     int *hiddenStateSeq, int *numStates, VECTOR_OF_F_VECTORS *allMixtureMeans, VECTOR_OF_F_VECTORS *allMixtureVars,  int totalNumFeatures, float **B, int *numElemEachState, float *T1[], int *T2[], float *Pi);
+int* CheckMinDuration( int *hiddenStateSeq, int *numStates, int totalNumFeatures, float **B);
 #endif

@@ -28,12 +28,12 @@ int                                  featureSpace[MAX_NUM_FEATURES][3];
 int                                  allFeaturesCount = 0;
 //function prototypes 
 
-void InitializeGMMs(VECTOR_OF_F_VECTORS *, int , int , int *);
+int InitializeGMMs(VECTOR_OF_F_VECTORS *, int , int , int *);
 
 void ComputePosteriorProb( VECTOR_OF_F_VECTORS *features, float **posterior, VECTOR_OF_F_VECTORS *allMixtureMeans, 
 			   VECTOR_OF_F_VECTORS *allMixtureVars, int *numStates,  int );
 
-void ClusteringAndMerging(VECTOR_OF_F_VECTORS *features,          VECTOR_OF_F_VECTORS *allMixtureMeans,    
+int ClusteringAndMerging(VECTOR_OF_F_VECTORS *features,          VECTOR_OF_F_VECTORS *allMixtureMeans,    
 			  VECTOR_OF_F_VECTORS *allMixtureVars,               int *numStates,   
 			  int totalNumFeatures,         float **posterior,   int *numElemEachState,
 			  float *Pi);

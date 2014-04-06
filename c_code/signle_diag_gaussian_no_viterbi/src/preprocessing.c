@@ -40,6 +40,7 @@ int main(int argc, char *argv[]){
   }
   
   while((ret = fscanf(scp_file, "%s", line)) == 1){
+    //printf("%s\n", line);
     if(ret == EOF)
       break;  
     char start[20], end[20];
@@ -48,13 +49,16 @@ int main(int argc, char *argv[]){
       i++;
     for(j = 0,i++; line[i] != '_'; j++,i++)
       start[j] = line[i];
+    start[j] = '\0';
     for(j=0, i++; line[i] != '='; i++, j++)
       end[j] = line[i];
+    end[j] = '\0';
     int s = atoi(start);
     int e = atoi(end);
+    //printf("%d  %d \n", s, e);
     for(i = s; i <= e; i++)
       flag[i] = 1;    
-    // printf("%d  %d \n", s, e);
+    
   }
   
   //process feature file and drop all unvoiced frames         
@@ -112,7 +116,7 @@ int main(int argc, char *argv[]){
   }
   path[i] = '\0';  
   int len = strlen(path);
-  printf("path: %s  l: %d\n", path, len);
+  //printf("path: %s  l: %d\n", path, len);
   int start = 0, end = 0;
   for(i = len-1; i >= 0; i--){
     if(path[i] == '.'){
@@ -123,7 +127,7 @@ int main(int argc, char *argv[]){
       break;
     }
   }
-  printf("start: %d  end: %d\n", start, end);
+  //printf("start: %d  end: %d\n", start, end);
   for(i = start+1; i < end; i++){
     fileName[i-start-1] = path[i];
   }
@@ -131,6 +135,7 @@ int main(int argc, char *argv[]){
   printf("file name: %s \n", fileName);
   //Uniform initialization all Gaussian mixtures 
   InitializeGMMs(features, DIM, TotalFeatures, numStates);
+  return 0;
 }
 
 /******************************************************************************
@@ -140,7 +145,7 @@ int main(int argc, char *argv[]){
    outputs : Initialized GMMs with means vector and variance vector, posterior probabilities 
    all feature vectors
 ******************************************************************************/
-void InitializeGMMs(VECTOR_OF_F_VECTORS *features, int Dim, int totalNumFeatures, int *numStates){
+int InitializeGMMs(VECTOR_OF_F_VECTORS *features, int Dim, int totalNumFeatures, int *numStates){
 
   VECTOR_OF_F_VECTORS                  *allMixtureMeans, *allMixtureVars;
 
@@ -251,6 +256,7 @@ void InitializeGMMs(VECTOR_OF_F_VECTORS *features, int Dim, int totalNumFeatures
   */
   ClusteringAndMerging( features,     allMixtureMeans,       allMixtureVars,    numStates,    totalNumFeatures,   posterior, 
   			numElemEachState,    Pi);
+  return 0;
 }
 
 
@@ -263,7 +269,7 @@ void InitializeGMMs(VECTOR_OF_F_VECTORS *features, int Dim, int totalNumFeatures
 
    outputs : Perform viterbi realignment, clustering and merging of states or GMMs
 ******************************************************************************/
-void ClusteringAndMerging(VECTOR_OF_F_VECTORS *features,          VECTOR_OF_F_VECTORS *allMixtureMeans,         
+int ClusteringAndMerging(VECTOR_OF_F_VECTORS *features,          VECTOR_OF_F_VECTORS *allMixtureMeans,         
 			  VECTOR_OF_F_VECTORS *allMixtureVars,               int *numStates,          int numFeatures,
 			  float **posterior,	  int *numElemEachState,                 float *Pi)
 {
@@ -284,7 +290,7 @@ void ClusteringAndMerging(VECTOR_OF_F_VECTORS *features,          VECTOR_OF_F_VE
   }
   for(i = numFeatures -1; i > numFeatures - *numStates; i--)
     stateSeq[i] = *numStates - 1;
-  while(mergeIter < maxMergeIter && *numStates > 0 && flag){
+  while(mergeIter < maxMergeIter && *numStates > 1 && flag){
     for(s = 0; s < *numStates; s++)
       printf("elements in state:%d  %d \n", s, numElemEachState[s]);
     //calculate deltaBIC for each pair of states
@@ -337,6 +343,8 @@ void ClusteringAndMerging(VECTOR_OF_F_VECTORS *features,          VECTOR_OF_F_VE
   // writePlotFile(posterior, numFeatures, numStates);
   //WRITE RTTM FILE
   writeRTTMFile(stateSeq, numStates, numFeatures, numElemEachState);
+  printf("RTTM file has been written....\n");
+  return 0;
 }
 
 /******************************************************************************/
@@ -410,6 +418,7 @@ void writeRTTMFile(int *stateSeq, int *numStates, int totalNumFeatures, int *num
       }
     }
   }
+  fclose(rttm);
   //done  
 }
 /******************************************************************************
@@ -654,7 +663,7 @@ void BIC_Modified( float **deltaBIC,   VECTOR_OF_F_VECTORS *features,    VECTOR_
       int nJ = numElemEachState[j];      
       float Penalty = LAMBDA * 0.5 * (DIM + 0.5 * DIM * (DIM + 1)) * log(nI + nJ);
       deltaBIC[i][j] = (nI + nJ) * detSigma - nI * det[i] - nJ * det[j] - Penalty;
-      printf("i:%d  j:%d  deltaBIC: %f P: %f\n\n\n", i, j , deltaBIC[i][j], Penalty);
+      //printf("i:%d  j:%d  deltaBIC: %f P: %f\n\n\n", i, j , deltaBIC[i][j], Penalty);
     }
   }
 }

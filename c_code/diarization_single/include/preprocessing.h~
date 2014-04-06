@@ -29,6 +29,13 @@ int dfs = 0;
 int                                  **featureSpace;
 int                                  allFeaturesCount = 0;
 //function prototypes 
+typedef struct HMM{
+  VECTOR_OF_F_VECTORS *allMixtureMeans, *allMixtureVars;
+  VECTOR_OF_F_VECTORS *trans;
+  F_VECTOR *prior;
+  int *numStates;  
+  int MD = 0;
+}hmm;
 
 int InitializeGMMs(VECTOR_OF_F_VECTORS *, int , int , int *);
 
@@ -66,11 +73,14 @@ void MergeTwoStatesModified( int s_i,  int s_j  , VECTOR_OF_F_VECTORS *allMixtur
 			     int *numElemEachState,                    float *Pi,          int totalNumFeatures,
 			     VECTOR_OF_F_VECTORS *features, int *stateSeq);
 
-void writeRTTMFile(int *stateSeq, int *numStates, int totalNumFeatures, int *numElemEachState);
+int writeRTTMFile(int *stateSeq, int *numStates, int totalNumFeatures, int *numElemEachState);
 
-void writePlotFile(float **posterior, int totalNumFeatures, int *numStates, int *);
+int writePlotFile(float **posterior, int totalNumFeatures, int *numStates, int *);
 
 void PrintAllDetails(int *numStates, int *numMixEachState, int *numElemEachState, 
 		     float **mixtureElemCount, VECTOR_OF_F_VECTORS *allMixtureMeans, float *mixtureWeight);
+hmm* hmm2MinDurationHMM(VECTOR_OF_F_VECTORS *allMixtureMeans, VECTOR_OF_F_VECTORS *allMixtureVars, int *numStates);
+void printHMM(hmm *mdHMM);
+
 
 #endif

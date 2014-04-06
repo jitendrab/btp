@@ -1,0 +1,38 @@
+#!/bin/bash
+
+MATLAB="/usr/local/MATLAB/R2011a/bin/matlab -nodesktop -nojvm -nosplash -nodisplay"
+CFG_FILE=../config/ib.cfg 
+source $CFG_FILE
+
+#ES2002a ES2006a ES2007a ES2007d ES2009b ES2002b ES2002d ES2003b ES2003c ES2004b ES2005b ES2005d  ES2006b ES2006c ES2006d EN2001b EN2002a EN2004a EN2002b IS1008a 
+# EN2002d EN2003a EN2005a EN2006a EN2006b EN2009b EN2009c EN2009d     ES2008c  TS3010a ES2004a ES2008a ES2010d ES2011a ES2012a 
+for id in IS2007a
+#ES2002a.Mix-Headset ES2002a.Mix-Lapel ES2003a.Mix-Headset ES2003a.Mix-Lapel ES2004a.Mix-Headset ES2004a.Mix-Lapel ES2005a.Mix-Headset ES2005a.Mix-Lapel ES2006a.Mix-Headset ES2006a.Mix-Lapel ES2007a.Mix-Headset ES2007a.Mix-Lapel ES2007d.Mix-Headset ES2007d.Mix-Lapel ES2009a.Mix-Headset ES2009a.Mix-Lapel  ES2010a.Mix-Headset ES2010a.Mix-Lapel ES2010d.Mix-Headset ES2010d.Mix-Lapel ES2011a.Mix-Headset ES2011a.Mix-Lapel ES2012a.Mix-Headset ES2012a.Mix-Lapel ES2012d.Mix-Headset ES2012d.Mix-Lapel ES2016a.Mix-Headset ES2016a.Mix-Lapel IB4002.Mix-Headset IB4002.Mix-Lapel IN1009.Mix-Headset IN1009.Mix-Lapel IS1001a.Mix-Headset IS1001a.Mix-Lapel IS1001d.Mix-Headset IS1001d.Mix-Lapel IS1002d.Mix-Headset IS1002d.Mix-Lapel IS1003a.Mix-Headset IS1003a.Mix-Lapel IS1004a.Mix-Headset IS1004a.Mix-Lapel IS1005a.Mix-Headset IS1005a.Mix-Lapel IS1006a.Mix-Headset IS1006a.Mix-Lapel IS1007a.Mix-Headset IS1007a.Mix-Lapel IS1008a.Mix-Headset IS1008a.Mix-Lapel IS1009a.Mix-Headset IS1009a.Mix-Lapel 
+#TS3003a.Headset-3 TS3003a.Mix-Headset TS3004a.Headset-3 TS3004a.Mix-Headset TS3005a.Headset-3 TS3005a.Mix-Headset TS3006a.Headset-3 TS3006a.Mix-Headset TS3007a.Headset-3 TS3007a.Mix-Headset TS3008a.Headset-3 TS3008a.Mix-Headset TS3010a.Headset-3 TS3010a.Mix-Headset TS3011a.Headset-3 TS3011a.Mix-Headset TS3012a.Headset-3 TS3012a.Mix-Headset
+#ES2008d  ES2009c ES2009d   ES2011d  ES2012b ES2012c ES2012d ES2013c ES2014a ES2014b ES2014c ES2015b ES2015c ES2015d ES2016a ES2016c ES2016d IB4001 IB4002 IB4004 IB4005 IB4011 IN1001 IN1002 IN1005 IN1008 IN1009 IN1012 IN1013 IN1014 IS1000a IS1000c IS1000d IS1001a IS1001b IS1001c IS1001d IS1002c IS1002d IS1003a IS1003c IS1004a IS1004c IS1004d IS1005a IS1005b IS1006a IS1006b IS1006c IS1006d  IS1007b IS1007c  IS1008b IS1009a IS1009d temp TS3003b TS3003c TS3003d TS3004a TS3004d TS3005b TS3005c TS3006a TS3006b TS3006c TS3006d TS3007a TS3007c TS3007d TS3008a TS3008b TS3008c TS3008d TS3009b TS3009c TS3009d  TS3010b TS3010c TS3011b TS3011d TS3012b
+do
+     source /etc/environment
+     
+     echo "$id";
+     #if [ ! -f /home/jitu/btp/data/diarization_data/mfcc/$id.mfcc ]; then
+#	 echo 'mfc File not found\n';
+#	 continue;
+ #    fi
+     #IFS='.' read -ra LINE <<< "$id"
+     #for i in "${LINE[@]}";do
+#	 echo "$i";
+	 
+	 #for j in "${i[@]}";do
+	  #   echo "$j";
+	 #done
+ #    done
+     if [ ! -f /home/jitu/btp/data/diarization_data/gt.scp/$id.scp ]; then
+	 echo 'scp file not found\n';
+	 continue;
+     fi
+     ../bin/aibfeat --config $CFG_FILE --mfcc /home/jitu/btp/data/diarization_data/mfcc/$id.fea 1.0 --scp /home/jitu/btp/data/diarization_data/gt.scp/$id.scp --id $id
+     #../bin/aibfeat --config $CFG_FILE --mfcc /home/jitu/btp/data/ami/my_mix_mfcc/$id.mfea 1.0 --scp /home/jitu/btp/data/diarization_data/gt.scp/$id.scp --id $id
+     $MATLAB -r "addpath(genpath('$AIB_PATH'));cluster_segments('$id','$TMP_DIR','$MAX_CLUSTERS',1,'$MODEL_SEL_PARAM','$AIB_BETA'); exit;" ;
+     ../bin/realign --config $CFG_FILE --id $id 
+ done
+

@@ -8,6 +8,15 @@
 #define MAX_NUM_MIX 100
 #define INITIAL_NUM_MIX 1 //single gaussian
 #define LAMBDA 8
-#define INITIAL_STATES 10
+#define INITIAL_STATES 9
 #define MIN_DUR 250
+
+typedef struct HMM{
+  VECTOR_OF_F_VECTORS *allMixtureMeans, *allMixtureVars;
+  VECTOR_OF_F_VECTORS *trans;
+  F_VECTOR *prior;
+  int *numStates;  
+  int MD;
+}hmm;
+
 #endif

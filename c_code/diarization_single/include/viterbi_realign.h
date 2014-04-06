@@ -17,7 +17,7 @@
 #include <math.h>
 //#include "../include/preprocessing.h"
 
-int* viterbi( VECTOR_OF_F_VECTORS *features,    int *numStates,          VECTOR_OF_F_VECTORS *allMixtureMeans,                       VECTOR_OF_F_VECTORS *allMixtureVars,           int totalNumFeatures,              float **B,           int *numElemEachState,                          float *T1[],               int *T2[],                          float *Pi,         int *);
+int* viterbi( VECTOR_OF_F_VECTORS *features, hmm* mdHMM,          int totalNumFeatures,              float **B,           int *numElemEachState,                          float *T1[],               int *T2[],                          float *Pi,         int *);
 
 int* CheckMinDuration( int *hiddenStateSeq, int *numStates, int totalNumFeatures, float **B);
 #endif

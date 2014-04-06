@@ -23,7 +23,6 @@
 #include "stdio.h" 
 typedef int INT_TYPE;
 
-
 typedef float FLOAT_TYPE;
 
 typedef struct {

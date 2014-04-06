@@ -10,11 +10,12 @@ int main(int argc, char *argv[]){
   FILE                                 *feat_file, *scp_file;
   int                                  i = 0, j= 0, count = 0, TotalFeatures = 0,ret=0;
   char                                 line[512]; //to store the whole line    
-  short int                            flag[MAX_NUM_FEATURES] = {0};  
+  int                            *flag;
   VECTOR_OF_F_VECTORS                  *features; //check memory access (need to allocate more space)
   F_VECTOR                             *feat;
   int                                  States = INITIAL_STATES;
   int                                  *numStates = &States;
+  flag = (int *)calloc(MAX_NUM_FEATURES, sizeof(int ));
   features = (VECTOR_OF_F_VECTORS *)calloc(MAX_NUM_FEATURES, sizeof(VECTOR_OF_F_VECTORS));
   feat = (F_VECTOR *)AllocFVector(DIM);
   for(i = 0; i < MAX_NUM_FEATURES; i++){
@@ -45,6 +46,7 @@ int main(int argc, char *argv[]){
   }
   
   while((ret = fscanf(scp_file, "%s", line)) == 1){
+    //printf("%s\n", line);
     if(ret == EOF)
       break;  
     char start[20], end[20];
@@ -53,13 +55,15 @@ int main(int argc, char *argv[]){
       i++;
     for(j = 0,i++; line[i] != '_'; j++,i++)
       start[j] = line[i];
+    start[j] = '\0';
     for(j=0, i++; line[i] != '='; i++, j++)
       end[j] = line[i];
+    end[j] = '\0';
     int s = atoi(start);
     int e = atoi(end);
+    //printf("%d  %d \n", s, e);
     for(i = s; i <= e; i++)
-      flag[i] = 1;    
-    // printf("%d  %d \n", s, e);
+      flag[i] = 1;        
   }
   
   //process feature file and drop all unvoiced frames         
@@ -128,7 +132,7 @@ int main(int argc, char *argv[]){
       break;
     }
   }
-  printf("start: %d  end: %d\n", start, end);
+  // printf("start: %d  end: %d\n", start, end);
   for(i = start+1; i < end; i++){
     fileName[i-start-1] = path[i];
   }
@@ -256,17 +260,85 @@ int InitializeGMMs(VECTOR_OF_F_VECTORS *features, int Dim, int totalNumFeatures,
   for(i = 0; i < *numStates; i++)
     printf("elem in state: %d     %d \n", i, elems_in_states[i]);
   */
-  
-  ClusteringAndMerging( features,     allMixtureMeans,       allMixtureVars,    numStates,    totalNumFeatures,   posterior, 
-			       numElemEachState,    Pi);
+  //convert hmm to min-duration hmm
+  hmm *mdHMM;
+  mdHMM = hmm2MinDurationHMM(allMixtureMeans, allMixtureVars, numStates);
+  //printHMM(mdHMM);
+  //ClusteringAndMerging( features,   mdHMM,    totalNumFeatures,   posterior, numElemEachState,    Pi);
   printf("Everything is done...now SIGsegv will occur....\n");
   // FREE THE MEMORY
-  free(numElemEachState);
-  free(Pi);
-  free(numMixEachState);
+  //free(numElemEachState);
+  //free(Pi);
+  //free(numMixEachState);
   return 0;
 }
-
+/******************************************************************************/
+void printHMM(hmm *mdHMM){
+  //print means
+  int states = *(mdHMM->numStates);
+  int i = 0, j = 0, k = 0;
+  //print means
+  for(i = 0; i < states; i++){
+    for(j = 0; j < DIM; j++){
+      printf("%f ", mdHMM->allMixtureMeans[i]->array[j]);
+    }
+    printf("\n");
+  }
+  //print variance (using diagonal covariance matrix
+  // print transition matrix
+  printf("\ntransition matrix:\n");
+  for(i = 0; i < states * MIN_DUR; i++){
+    for(j = 0; j < states * MIN_DUR; j++)
+      if(mdHMM->trans[i]->array[j] > 0.001)
+	printf("%f ", mdHMM->trans[i]->array[j]);
+    printf("\n");
+  }
+  //print prior prob
+  printf("\nprior prob:\n");
+  for(i = 0; i < states * MIN_DUR; i++){
+    printf("%f ", mdHMM->prior->array[i]);
+  }
+  printf("\n");
+}
+/******************************************************************************/
+hmm* hmm2MinDurationHMM(VECTOR_OF_F_VECTORS *allMixtureMeans, VECTOR_OF_F_VECTORS *allMixtureVars, int *numStates){
+  hmm *mdHMM = (hmm *)malloc(sizeof(hmm));
+  int i = 0, j = 0;
+  mdHMM->allMixtureMeans = allMixtureMeans;
+  mdHMM->allMixtureVars = allMixtureVars;
+  mdHMM->numStates = numStates;
+  
+  F_VECTOR *prior = (F_VECTOR *)AllocFVector((*numStates)*MIN_DUR);
+  VECTOR_OF_F_VECTORS *trans = (VECTOR_OF_F_VECTORS *)calloc((*numStates)*MIN_DUR, sizeof(VECTOR_OF_F_VECTORS ));
+  for(i = 0; i < (*numStates)*MIN_DUR; i++){
+    trans[i]    = (F_VECTOR *)AllocFVector((*numStates)*MIN_DUR);
+  }  
+  
+  // create a topeliz matrix
+  for(i = 0, j = 1; i < (*numStates)*MIN_DUR, j < (*numStates)*MIN_DUR; i++, j++){
+    trans[i]->array[j] = 1;
+  }
+  // create prior matrix
+  float prob = log((float)1.0/(*numStates));
+  printf("states: %d  prior: %f\n", *numStates, prob);
+  for(i = 0; i < (*numStates)*MIN_DUR; i++){
+    prior->array[i] = prob;
+  }
+  
+  // now copy the elements on the right spot
+  for(i = 1; i <= *numStates; i++){
+    trans[i*MIN_DUR-1]->array[j*MIN_DUR-1] = prob; //hmm.trans[i-1][i-1] all are equal to prob
+    for(j = i+1; j <= *numStates; j++){
+      trans[i*MIN_DUR -1]->array[(j-1) * MIN_DUR ] = prob; // all transition prob are same in our case
+      trans[j*MIN_DUR -1]->array[(i-1)*MIN_DUR ] = prob;
+    }
+  }
+  // model.trans = sparse(trans) 
+  mdHMM->prior = prior;
+  mdHMM->trans = trans;
+  mdHMM->MD = 250;
+  return mdHMM;
+}
 
 /******************************************************************************
    mergingAndClustering() : Clustering of GMMs and Realignment; Merging of states 
@@ -277,25 +349,24 @@ int InitializeGMMs(VECTOR_OF_F_VECTORS *features, int Dim, int totalNumFeatures,
 
    outputs : Perform viterbi realignment, clustering and merging of states or GMMs
 ******************************************************************************/
-int ClusteringAndMerging(VECTOR_OF_F_VECTORS *features,          VECTOR_OF_F_VECTORS *allMixtureMeans,         
-			 VECTOR_OF_F_VECTORS *allMixtureVars,               int *numStates,          int totalNumFeatures,
+int ClusteringAndMerging(VECTOR_OF_F_VECTORS *features,  hmm *mdHMM,         int totalNumFeatures,
 			 float **posterior,	  int *numElemEachState,                 float *Pi)
 {
   // local Variable declaration
   int                           VQIter = 1, GMMIter = 2, mergeIter=0, maxMergeIter = 16;
-  int                           viterbiIter = 5;
+  int                           viterbiIter = 1;
   int                           i = 0, j = 0, k = 0,s= 0,  flag = 1 ;
-  float                         *T1[MAX_NUM_STATES];
-  int                           *T2[MAX_NUM_STATES];
-  int                           *newStateSeq;
+  float                         *delta[MAX_NUM_STATES * MIN_DUR];
+  int                           *psi[MAX_NUM_STATES * MIN_DUR];
+  int                           *path;
   float                         *deltaBIC[MAX_NUM_STATES];
-  newStateSeq = (int *)calloc(totalNumFeatures, sizeof(int));
+  path = (int *)calloc(totalNumFeatures, sizeof(int));
   for(i = 0; i < (*numStates); i++){
     deltaBIC[i] = (float *)calloc((*numStates), sizeof(float));
   }
   for(i = 0; i < (*numStates); i++){
-    T1[i] = (float *)calloc(totalNumFeatures, sizeof(float));
-    T2[i] = (int *)calloc(totalNumFeatures, sizeof(int));
+    delta[i] = (float *)calloc(totalNumFeatures, sizeof(float));
+    psi[i] = (int *)calloc(totalNumFeatures, sizeof(int));
   }
   // Merge two GMM States or two mixture models
   //perform the steps repeatedly till there are no more states to be merged 
@@ -309,11 +380,10 @@ int ClusteringAndMerging(VECTOR_OF_F_VECTORS *features,          VECTOR_OF_F_VEC
       //perform Viterbi Realignment       
       printf("performing viterbi realignment....\n");
       
-      newStateSeq     = viterbi(  features , numStates,       allMixtureMeans,      allMixtureVars,     totalNumFeatures,
-				  posterior,                numElemEachState,        T1,           T2,                  Pi,
-				  newStateSeq);
+      path     = viterbi(  features , mdHMM,   totalNumFeatures,  posterior,    numElemEachState,        delta, 
+			   psi,       Pi,    path);
       
-      printf("Viterbi realignment has successfully completed...\n");
+      printf("optimal path finding using viterbi has completed...\n");
       //find number of elements in each state
       //FindNumberOfElemInEachState(newStateSeq,   numStates, totalNumFeatures,  numElemEachState, Pi);
     
@@ -322,7 +392,7 @@ int ClusteringAndMerging(VECTOR_OF_F_VECTORS *features,          VECTOR_OF_F_VEC
 	// find all elements present in state s using viterbi_realignment
 	int count = 0, d = 0; // to count number of features in a state
 	for(j = 0; j < totalNumFeatures; j++){
-	  if(newStateSeq[j] == s){
+	  if(path[j] == s){
 	    for(d = 0; d < DIM; d++){
 	      featuresForClustering[count]->array[d] = features[j]->array[d];
 	      featuresForClustering[count]->numElements = DIM;
@@ -357,7 +427,7 @@ int ClusteringAndMerging(VECTOR_OF_F_VECTORS *features,          VECTOR_OF_F_VEC
     }
     // Calculate BIC Value between Each state   
     BIC_Modified(deltaBIC,    features ,        allMixtureMeans,    allMixtureVars,    numStates,        totalNumFeatures,    
-		 newStateSeq,     	  numElemEachState);  
+		 path,     	  numElemEachState);  
     int min_i =0, min_j = 0;
     float min = 99999999;
     // find minimum delta BIC states
@@ -380,7 +450,7 @@ int ClusteringAndMerging(VECTOR_OF_F_VECTORS *features,          VECTOR_OF_F_VEC
     if(flag)
       MergeTwoStatesModified( min_i,   min_j,   allMixtureMeans,    allMixtureVars,      numStates,  
 			      numElemEachState,                     Pi,                  totalNumFeatures,
-			      features,                  newStateSeq);
+			      features,                  path);
     ComputePosteriorProb(features,    posterior,      allMixtureMeans,       allMixtureVars,     numStates,     totalNumFeatures);
   }
   //WRITE PLOT_File to plot distribution of each data point
@@ -388,10 +458,10 @@ int ClusteringAndMerging(VECTOR_OF_F_VECTORS *features,          VECTOR_OF_F_VEC
   // free some memory
   
   //now apply min-duration segment wise constaint
-  newStateSeq = CheckMinDuration(newStateSeq, numStates, totalNumFeatures, posterior);
+  //path = CheckMinDuration(path, numStates, totalNumFeatures, posterior);
   
-  writePlotFile(posterior, totalNumFeatures, numStates, newStateSeq);
-  writeRTTMFile(newStateSeq, numStates, totalNumFeatures, numElemEachState);
+  writePlotFile(posterior, totalNumFeatures, numStates, path);
+  writeRTTMFile(path, numStates, totalNumFeatures, numElemEachState);
   printf("this is the last point...\n");
   return 0;
 }
@@ -708,7 +778,7 @@ void BIC_Modified( float **deltaBIC,   VECTOR_OF_F_VECTORS *features,    VECTOR_
       int nJ = numElemEachState[j];      
       float Penalty = LAMBDA * 0.5 * (DIM + 0.5 * DIM * (DIM + 1)) * log(nI + nJ);
       deltaBIC[i][j] = (nI + nJ) * detSigma - nI * det[i] - nJ * det[j] - Penalty;
-      printf("i:%d  j:%d  deltaBIC: %f P: %f\n\n\n", i, j , deltaBIC[i][j], Penalty);
+      printf("i:%d  j:%d  deltaBIC: %f P: %f, nI:%d  nJ:%d\n\n", i, j , deltaBIC[i][j], Penalty, nI, nJ);
     }
   }
 }

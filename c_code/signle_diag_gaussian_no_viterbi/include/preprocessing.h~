@@ -66,7 +66,7 @@ void MergeTwoStatesModified( int s_i,  int s_j  , VECTOR_OF_F_VECTORS *allMixtur
 
 void writeRTTMFile(int *stateSeq, int *numStates, int totalNumFeatures, int *numElemEachState);
 
-void writePlotFile(float **posterior, int totalNumFeatures, int *numStates);
+void writePlotFile(int totalNumFeatures, int *numStates, int *);
 
 void PrintAllDetails(int *numStates, int *numMixEachState, int *numElemEachState, 
 		     float **mixtureElemCount, VECTOR_OF_F_VECTORS *allMixtureMeans, float *mixtureWeight);

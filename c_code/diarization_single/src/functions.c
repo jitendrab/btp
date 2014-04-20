@@ -1,3 +1,8 @@
+/*
+Written By: Jitendra Prasad Keer
+BTech, CSE, IIT Mandi
+ */
+
 /*-------------------------------------------------------------------------
  *  AllocFloatArray -- Allocates an array of floats
  *    Args:	Array, size of array

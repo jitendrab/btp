@@ -1,3 +1,8 @@
+/*
+Written By: Jitendra Prasad Keer
+BTech, CSE, IIT Mandi
+ */
+
 #include "../../include/preprocessing.h"
 #include "../../include/config_multi.h"
 int main(int argc, char *argv[]){

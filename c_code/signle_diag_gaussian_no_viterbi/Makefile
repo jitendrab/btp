@@ -1,3 +1,7 @@
+#Written By: Jitendra Prasad Keer
+#BTech, CSE, IIT Mandi
+
+
 BASEDIR = /home/jitu/btp/c_code
 SRCDIR = src
 DSPLIB = src

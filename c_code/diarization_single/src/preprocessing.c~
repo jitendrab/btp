@@ -356,8 +356,8 @@ int ClusteringAndMerging(VECTOR_OF_F_VECTORS *features,  hmm *mdHMM,         int
   int                           VQIter = 1, GMMIter = 2, mergeIter=0, maxMergeIter = 16;
   int                           viterbiIter = 1;
   int                           i = 0, j = 0, k = 0,s= 0,  flag = 1 ;
-  float                         *delta[MAX_NUM_STATES];
-  int                           *psi[MAX_NUM_STATES];
+  float                         *delta[MAX_NUM_STATES * MIN_DUR];
+  int                           *psi[MAX_NUM_STATES * MIN_DUR];
   int                           *path;
   float                         *deltaBIC[MAX_NUM_STATES];
   path = (int *)calloc(totalNumFeatures, sizeof(int));

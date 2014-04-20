@@ -1,3 +1,8 @@
+/*
+Written By: Jitendra Prasad Keer
+BTech, CSE, IIT Mandi
+ */
+
 #include "../../include/viterbi_realign.h"
 /******************************************************************************
    viterbi_realign : Perform Viterbi Realignment on given observation vectors

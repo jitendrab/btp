@@ -1,5 +1,0 @@
-1. This contains source code for speaker segmentation and clustering.
-Each segment was modeled using single gaussian with diagonal covariace matrix.
-
-2. This part will include EDHMM implementation. Viterbi realignment with minimum duration modeling.
-

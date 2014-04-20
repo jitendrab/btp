@@ -1,0 +1,5 @@
+# ignore generated backup files with ~
+*.c~
+*.cpp~
+*.md~
+

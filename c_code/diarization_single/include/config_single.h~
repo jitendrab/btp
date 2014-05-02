@@ -16,7 +16,7 @@ typedef struct HMM{
   VECTOR_OF_F_VECTORS *trans;
   F_VECTOR *prior;
   int *numStates;  
-  int MD = 0;
+  int MD;
 }hmm;
 
 #endif

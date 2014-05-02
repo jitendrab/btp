@@ -343,7 +343,7 @@ hmm* hmm2MinDurationHMM(VECTOR_OF_F_VECTORS *allMixtureMeans, VECTOR_OF_F_VECTOR
   mdHMM->trans = trans;
   mdHMM->MD = 250;
   return mdHMM;
-}
+} 
 
 /******************************************************************************
    mergingAndClustering() : Clustering of GMMs and Realignment; Merging of states 

@@ -1,0 +1,67 @@
+Mixture of Gaussians and Hidden Markov Model Matlab toolbox
+(version 0.9)
+
+This Matlab toolbox is a simplified and bare implementation for the
+creation, training and evaluation of Mixture of Gaussian models and
+Hidden Markov Models. The Hidden Markov Models assume a Gaussian 
+Mixture model (with a variable number of clusters) in each of the states
+of the HMM. Additionally, the toolbox provides the possibility to have a
+minimum duration constraint for each of the states (enforcing that the
+HMM will stay for a certain minimum time duration in the same state).
+This can help significantly when the observed data is noisy, but the
+underlying state sequence is not expected to change rapidly.
+
+This toolbox is primarily developed for the segmentation of audio data.
+The main idea of the segmentation procedure is explained in [1]. This
+procedure is implemented in the function hmmtimesegment.m. A signal is
+first oversegmented in segments of equal length. On each initial segment
+a single Gaussian is fitted. These single Gaussians are used as
+generating pdf's for each state in a HMM. Then the HMM states (and the
+corresponding Gaussian models) are combined into new states. Two states
+are merged that increase the likelihood of the data the most. The
+merging continues until the likelihood stops to increase.
+
+[1] Ajmera and Wooters. A robust speaker clustering algorithm. 2003 IEEE
+Workshop on Automatic Speech Recognition and Understanding, 2003.
+ASRU'03 pp. 411-416
+
+From an audio signal, features are computed (often the Mel Frequency
+ceptral coefficients, for instance using the Matlab toolbox rastamat).
+The sequence of feature vectors is fed into the HMM time segmenter:
+
+x = melfcc(...);  % get data
+% define HMM parameters:
+N = [2 2 2];            % three states, each having a 2-component MoG:
+MD = 3;                 % minimum duration of 3 frames
+crit.maxiters = 100;     % stopcriterion: max. nr. of iterations
+crit.minllimpr = 1e-3;  % stopcriterion: min. likelihood improvement
+reg = 1e-3;             % regularization inverse cov. matrices
+% train the HMM (also obtain the viterbi-path):
+[hmm,pth] = hmmtimesegment(x,N,MD,crit,reg);
+% segment a new sequence:
+z = melfcc(...);
+pth = hmmviterbi(z,hmm);
+
+
+Also have a look at the file Contents.m, to see most of the available
+files. tsthmm gives an idea how to train a HMM.
+
+* Notes on version 0.9.4
+- Speeded up some parts of mogem using bsxfun
+- Added the .m-version of hmmlogsum, so that it will still run, although
+  hmmlogsum.c is not compiled.
+- Added a EM optimization where objects can be weighted by a weight.
+
+* Notes on version 0.9.3
+- Remove important typo in README and mogem (maxiter->maxiters)
+- Allow for a weighted combination of MoG models in mogcat.m
+- Remove another typo in hmmcombinestates (maxiter->maxiters)
+
+* Notes on version 0.9.2
+- Better helps in general, standarize the format
+- Added the README
+- Shitty copyright comments
+- More robust arguments hmmem.m
+
+
+

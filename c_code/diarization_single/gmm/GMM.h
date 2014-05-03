@@ -20,9 +20,9 @@
 
 #ifndef GMM_H
 #define GMM_H
-void InitGMM (VECTOR_OF_F_VECTORS *vfv, 
-	     VECTOR_OF_F_VECTORS *clusterMeans, 
-	     VECTOR_OF_F_VECTORS *clusterVars, int numClusters, int seed); 
+void InitGMM (VECTOR_OF_F_VECTORS *, int , 
+	     VECTOR_OF_F_VECTORS *, 
+	     VECTOR_OF_F_VECTORS *, int , int ); 
 float ComputeProbability(F_VECTOR *meanVector, F_VECTOR *varVector, 
 			 float priorProb, F_VECTOR *fvect, 
 			 float probScaleFactor);

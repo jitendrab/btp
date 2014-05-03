@@ -159,7 +159,7 @@ int main(int argc, char *argv[]){
 int InitializeGMMs(VECTOR_OF_F_VECTORS *features, int Dim, int totalNumFeatures, int *numStates){
 
   VECTOR_OF_F_VECTORS                  *allMixtureMeans, *allMixtureVars;
-
+  
   int                                  *numMixEachState;
   float                                *posterior[*numStates];
   int                                  i, j;
@@ -168,7 +168,7 @@ int InitializeGMMs(VECTOR_OF_F_VECTORS *features, int Dim, int totalNumFeatures,
   int                                  *numElemEachState;
   float                                *Pi;
   //allocate memory  
-  featuresForClustering = (VECTOR_OF_F_VECTORS *)calloc(totalNumFeatures, sizeof(VECTOR_OF_F_VECTORS));  
+  featuresForClustering = new   
   for(i = 0; i < totalNumFeatures; i++){
     featuresForClustering[i] = (F_VECTOR *)AllocFVector(DIM);
   }

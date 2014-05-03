@@ -13,6 +13,7 @@
 #include "../include/InitAsdf.h"
 #include "../include/DspLibrary.h"
 #include "../include/GMM.h"
+#include "../include/VQ_Modified.h"
 #include <stdlib.h>
 #include <math.h>
 
@@ -27,7 +28,7 @@
  *                        : mixtureVars  - vector of GMM variance vectors 
  *****************************************************************************/
 
-void InitGMM (VECTOR_OF_F_VECTORS *vfv,int numVectors, 
+void InitGMM (VECTOR_OF_F_VECTORS *vfv, int numVectors, 
               VECTOR_OF_F_VECTORS *mixtureMeans,               
 	      VECTOR_OF_F_VECTORS *mixtureVars, 
 	     int numMixtures, int seed) {

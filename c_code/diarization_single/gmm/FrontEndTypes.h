@@ -23,13 +23,30 @@
 #include "stdio.h" 
 typedef int INT_TYPE;
 
-
 typedef float FLOAT_TYPE;
 
-typedef struct {
+/* typedef struct { */
+/*   int numElements; */
+/*   float *array; */
+  
+/* } F_VECTOR; */
+
+/* typedef F_VECTOR* VECTOR_OF_F_VECTORS; */
+struct F_VECTOR{
   int numElements;
-  float *array;
-} F_VECTOR;
+  float *array; 
+ 
+  /* F_VECTOR(){ */
+  /*   numElements = 0; */
+  /* } */
+  F_VECTOR(int numElems){
+    numElements = numElems;
+    array = new float[numElems];
+  }
+  ~F_VECTOR(){
+    delete [] array;
+  }
+};
 
 typedef F_VECTOR* VECTOR_OF_F_VECTORS;
 

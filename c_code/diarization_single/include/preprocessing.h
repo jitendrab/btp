@@ -3,17 +3,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "FrontEndDefs.h"
-#include "FrontEndTypes.h"
-#include "VQ_Modified.h"
-#include "InitAsdf.h"
-#include "DspLibrary.h"
-#include "GMM.h"
-#include "VQ_Modified.h"
-#include "viterbi_realign.h"
+#include <time.h>
+#include "MyTypes.h"
+//#include "viterbi_realign.h"
+#include <mlpack/core.hpp>
 #include <math.h>
 
 #include "config_single.h"  //for single gaussian
+using namespace::mlpack::distribution;
+
 //globals
 VECTOR_OF_F_VECTORS                  *mixtureMeans, *mixtureVars;
 F_VECTOR                             *mean;
@@ -34,9 +32,9 @@ int InitializeGMMs(VECTOR_OF_F_VECTORS *, int , int , int *);
 void ComputePosteriorProb( VECTOR_OF_F_VECTORS *features, float **posterior, VECTOR_OF_F_VECTORS *allMixtureMeans, 
 			   VECTOR_OF_F_VECTORS *allMixtureVars, int *numStates,  int );
 
-int ClusteringAndMerging(VECTOR_OF_F_VECTORS *features,    hmm *mdHMM, 
-			 int totalNumFeatures,         float **posterior,   int *numElemEachState,
-			 float *Pi);
+/* int ClusteringAndMerging(VECTOR_OF_F_VECTORS *features,    hmm *mdHMM,  */
+/* 			 int totalNumFeatures,         float **posterior,   int *numElemEachState, */
+/* 			 float *Pi); */
 
 //void CalculateBIC(float **BIC, VECTOR_OF_F_VECTORS *,    int *numStates,  float **posterior, int totalNumFeatures, int *stateSeq, int *numMixEachState,               int *numElemEachState);
 
@@ -70,8 +68,9 @@ int writePlotFile(float **posterior, int totalNumFeatures, int *numStates, int *
 
 void PrintAllDetails(int *numStates, int *numMixEachState, int *numElemEachState, 
 		     float **mixtureElemCount, VECTOR_OF_F_VECTORS *allMixtureMeans, float *mixtureWeight);
-hmm* hmm2MinDurationHMM(VECTOR_OF_F_VECTORS *allMixtureMeans, VECTOR_OF_F_VECTORS *allMixtureVars, int *numStates);
-void printHMM(hmm *mdHMM);
+
+//ESHMM* hmm2MinDurationHMM(ESHMM *mdHMM, int DIM, int *numStates, int MIN_DURATION);
+void printHMM(ESHMM *mdHMM);
 
 
 #endif

@@ -1,7 +1,7 @@
 #ifndef VQ_H
 #define VQ_H
 #include "FrontEndDefs.h"
-#include "FrontEndTypes.h"
+//#include "FrontEndTypes.h"
 void InitVQ (VECTOR_OF_F_VECTORS *vfv, 
 	     VECTOR_OF_F_VECTORS *clusterMeans, 
 	     VECTOR_OF_F_VECTORS *clusterVars,int num_clusters, float seed); 

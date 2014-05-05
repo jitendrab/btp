@@ -10,14 +10,15 @@
 #include <math.h>
 
 #include "config_single.h"  //for single gaussian
+using namespace::mlpack;
+using namespace mlpack::util;
 using namespace::mlpack::distribution;
+using namespace::arma;
 
 //globals
-VECTOR_OF_F_VECTORS                  *mixtureMeans, *mixtureVars;
-F_VECTOR                             *mean;
-F_VECTOR                             *var;
-F_VECTOR                             *x;
-VECTOR_OF_F_VECTORS                  *featuresForClustering;
+//mat                                  featuresForClustering; // collect features in this matrix
+mat                                  Cov;  // temporary covariance matrix
+vec                                  Mean;  // temporary mean vector
 char                                 fileName[100];
 float                                probScaleFactor = 1.0;
 int                                  ditherMean = 1;

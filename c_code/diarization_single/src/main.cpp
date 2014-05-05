@@ -4,6 +4,7 @@ BTech, CSE, IIT Mandi
  */
 
 #include "../include/preprocessing.h"
+
 #include "initialization.cpp"
 
 int main(int argc, char *argv[]){
@@ -153,7 +154,7 @@ int main(int argc, char *argv[]){
   fileName[i] = '\0';
   printf("file name: %s \n", fileName);
   //Uniform initialization all Gaussian mixtures 
-  //InitializeGMMs(features, DIM, TotalFeatures, numStates);
+  InitializeGMMs(features, DIM, TotalFeatures, numStates);
   printf("exiting from main....\n");
   return 0;
 }
@@ -161,20 +162,19 @@ int main(int argc, char *argv[]){
 /***************************************************************************************/
 void printHMM(ESHMM *mdHMM){
   //print means
-  int states = mdHMM->numStates;
+  int states = mdHMM->hmmStates;
+  printf("no of states: %d \n", states);
   int i = 0, j = 0, k = 0;
   //print means
   for(i = 0; i < states; i++){
-    for(j = 0; j < DIM; j++){
-      printf("%f ", mdHMM->HMMstates[i]->mean->array[j]);
-    }
+    Mean = mdHMM->HMMstates[i].Mean(); // Obtain Mean Vector by calling object method
+    Mean.print("printing Mean:\n");
     printf("\n");
   }
   //print Covariace Matrix
   for(i = 0; i < states; i++){
-    for(j = 0; j < DIM; j++){
-      printf("%f ", mdHMM->HMMstates[i]->cov[j]->array[j]);
-    }
+    Cov = mdHMM->HMMstates[i].Covariance(); // Obtain Covariance Matrix by calling object method
+    Cov.print("Covariance Matrix:\n");
     printf("\n");
   }
   //print variance (using diagonal covariance matrix
@@ -194,38 +194,4 @@ void printHMM(ESHMM *mdHMM){
   printf("\n");
 }
 /******************************************************************************/
-// ESHMM* hmm2MinDurationHMM(VECTOR_OF_F_VECTORS *allMixtureMeans, VECTOR_OF_F_VECTORS *allMixtureVars, int *numStates){
-//   int i = 0, j = 0;      
-  
-//   F_VECTOR *prior = (F_VECTOR *)AllocFVector((*numStates)*MIN_DUR);
-//   VECTOR_OF_F_VECTORS *trans = (VECTOR_OF_F_VECTORS *)calloc((*numStates)*MIN_DUR, sizeof(VECTOR_OF_F_VECTORS ));
-//   for(i = 0; i < (*numStates)*MIN_DUR; i++){
-//     trans[i]    = (F_VECTOR *)AllocFVector((*numStates)*MIN_DUR);
-//   }  
-  
-//   // create a topeliz matrix
-//   for(i = 0, j = 1; i < (*numStates)*MIN_DUR, j < (*numStates)*MIN_DUR; i++, j++){
-//     trans[i]->array[j] = 1;
-//   }
-//   // create prior matrix
-//   float prob = log((float)1.0/(*numStates));
-//   printf("states: %d  prior: %f\n", *numStates, prob);
-//   for(i = 0; i < (*numStates)*MIN_DUR; i++){
-//     prior->array[i] = prob;
-//   }
-  
-//   // now copy the elements on the right spot
-//   for(i = 1; i <= *numStates; i++){
-//     trans[i*MIN_DUR-1]->array[j*MIN_DUR-1] = prob; //hmm.trans[i-1][i-1] all are equal to prob
-//     for(j = i+1; j <= *numStates; j++){
-//       trans[i*MIN_DUR -1]->array[(j-1) * MIN_DUR ] = prob; // all transition prob are same in our case
-//       trans[j*MIN_DUR -1]->array[(i-1)*MIN_DUR ] = prob;
-//     }
-//   }
-//   // model.trans = sparse(trans) 
-//   mdHMM->prior = prior;
-//   mdHMM->trans = trans;
-//   mdHMM->MD = 250;
-//   return mdHMM;
-// } 
 

@@ -21,12 +21,18 @@
 #ifndef MY_TYPES
 #define MY_TYPES
 #include <stdio.h>
+#include <vector>
+#include <mlpack/core.hpp>
 using namespace::std;
+using namespace::mlpack;
+//using namespace mlpack::util;
+using namespace::mlpack::distribution;
+
 struct F_VECTOR{
  public:
   int numElements;
   float *array;
-  
+ public:
   F_VECTOR();
   F_VECTOR(int numElems){
     numElements = numElems;
@@ -39,54 +45,61 @@ struct F_VECTOR{
 
 typedef F_VECTOR* VECTOR_OF_F_VECTORS;
 
-class Gaussian{
- public:
-  F_VECTOR *mean;
-  VECTOR_OF_F_VECTORS *cov;
-  //constructor
- public:
-  Gaussian(int DIM){    
-    mean = new F_VECTOR(DIM);
-    VECTOR_OF_F_VECTORS *cov = new F_VECTOR *[DIM];
-    int i = 0;
-    for(i = 0; i < DIM; i++)
-      cov[i] = new F_VECTOR(DIM);    
-  }
-  //destructor
-  ~Gaussian(){
-    int numElems = mean->numElements;
-    int i = 0;
-    delete mean;
-    for(i = 0; i < numElems; i++)
-      delete cov[i];
-    delete [] cov;
-  }
+/* class Gaussian{ */
+/*  public: */
+/*   F_VECTOR *mean; */
+/*   VECTOR_OF_F_VECTORS *cov; */
+/*   //constructor */
+/*  public: */
+/*   Gaussian(int DIM){     */
+/*     mean = new F_VECTOR(DIM); */
+/*     VECTOR_OF_F_VECTORS *cov = new F_VECTOR *[DIM]; */
+/*     int i = 0; */
+/*     for(i = 0; i < DIM; i++) */
+/*       cov[i] = new F_VECTOR(DIM);     */
+/*   } */
+/*   //destructor */
+/*   ~Gaussian(){ */
+/*     int numElems = mean->numElements; */
+/*     int i = 0; */
+/*     delete mean; */
+/*     for(i = 0; i < numElems; i++) */
+/*       delete cov[i]; */
+/*     delete [] cov; */
+/*   } */
   
-  // Functions which will be used for gaussian class in c++
-  // void train_gaussian(VECTOR_OF_F_VECTORS *features, F_VECTOR *mean, VECTOR_OF_F_VECTORS *cov);
-  // float ComputProbability(F_VECTOR *mean, VECTOR_OF_F_VECTORS *cov, F_VECTOR *fvect, float prior, float probScaleFactor);  
-};
+/*   // Functions which will be used for gaussian class in c++ */
+/*   // void train_gaussian(VECTOR_OF_F_VECTORS *features, F_VECTOR *mean, VECTOR_OF_F_VECTORS *cov); */
+/*   // float ComputProbability(F_VECTOR *mean, VECTOR_OF_F_VECTORS *cov, F_VECTOR *fvect, float prior, float probScaleFactor);   */
+/* }; */
 
 class ESHMM{
  public:
-  Gaussian **HMMstates;
-  int numStates;
+  std::vector<GaussianDistribution> HMMstates;
+  //HMMstates.reserve(MAX_NUM_STATES);
+  int hmmStates;
   VECTOR_OF_F_VECTORS *trans; //transition matrix
-  VECTOR_OF_F_VECTORS *prior; // prior probabilities
+  F_VECTOR *prior; // prior probabilities
+  int *numElemEachState;
   int MD;
   int rowsTrans, rowsPrior;
  public:
   ESHMM();
   ESHMM(int numStates, int DIM, int rowsTrans, int colsTrans, int rowsPrior, int colsPrior){
-    numStates = numStates;
+    hmmStates = numStates;
     rowsTrans = rowsTrans;
     rowsPrior = rowsPrior;
+    numElemEachState = (int *)calloc(numStates, sizeof(int ));
     // HMMstates is an array of pointers pointing to numStates Gaussian objects
     // first allocate numStates pointers to Gaussian object and then allocate Gaussian object for each pointer
-    HMMstates = new Gaussian *[numStates];
+    // HMMstates = new GaussianDistribution [numStates] (sizeof(int ) DIM); not allowed in c++ arguments in constructor
     int i = 0;
-    for(i = 0; i < numStates; i++)
-      HMMstates[0] = new Gaussian(DIM);
+    for(i = 0; i < numStates; i++){
+      GaussianDistribution obj (DIM);
+      HMMstates.push_back(obj);
+    }
+    //for(i = 0; i < numStates; i++)
+    //HMMstates[i] = new GaussianDistribution(DIM) [numStates];
     
     trans = new F_VECTOR *[rowsTrans];
     prior = new F_VECTOR *[rowsPrior];    
@@ -102,11 +115,12 @@ class ESHMM{
       delete [] trans[i];
     for(i = 0; i < rowsPrior; i++)
       delete [] prior[i];
-    for(i = 0; i < numStates; i++)
-      delete [] HMMstates[i];
+    //for(i = 0; i < numStates; i++)
+    //delete HMMstates[i];
     delete [] prior;
     delete [] trans;
-    delete [] HMMstates;
+    vector<GaussianDistribution>().swap(HMMstates);
+    free(numElemEachState);
   }
   // functions which will be used by ESHMM class
   // 3. Build HMM given observation sequence training problem of hmm

@@ -10,5 +10,5 @@
 #define LAMBDA 8
 #define INITIAL_STATES 9
 #define MIN_DUR 250
-
+#define BILLION 1E9
 #endif

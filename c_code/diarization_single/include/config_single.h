@@ -7,8 +7,8 @@
 #define MAX_NUM_STATES 16
 #define MAX_NUM_MIX 100
 #define INITIAL_NUM_MIX 1 //single gaussian
-#define LAMBDA 8
-#define INITIAL_STATES 9
-#define MIN_DUR 250
+#define LAMBDA 0.3
+#define INITIAL_STATES 8
+#define MIN_DUR 5
 #define BILLION 1E9
 #endif

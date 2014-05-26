@@ -27,16 +27,16 @@ using namespace::std;
 using namespace::mlpack;
 //using namespace mlpack::util;
 using namespace::mlpack::distribution;
-
+using namespace::arma;
 struct F_VECTOR{
  public:
   int numElements;
-  float *array;
+  double *array;
  public:
   F_VECTOR();
   F_VECTOR(int numElems){
     numElements = numElems;
-    array = new float[numElems];
+    array = new double[numElems];
   }
   ~F_VECTOR(){
     delete [] array;
@@ -45,33 +45,6 @@ struct F_VECTOR{
 
 typedef F_VECTOR* VECTOR_OF_F_VECTORS;
 
-/* class Gaussian{ */
-/*  public: */
-/*   F_VECTOR *mean; */
-/*   VECTOR_OF_F_VECTORS *cov; */
-/*   //constructor */
-/*  public: */
-/*   Gaussian(int DIM){     */
-/*     mean = new F_VECTOR(DIM); */
-/*     VECTOR_OF_F_VECTORS *cov = new F_VECTOR *[DIM]; */
-/*     int i = 0; */
-/*     for(i = 0; i < DIM; i++) */
-/*       cov[i] = new F_VECTOR(DIM);     */
-/*   } */
-/*   //destructor */
-/*   ~Gaussian(){ */
-/*     int numElems = mean->numElements; */
-/*     int i = 0; */
-/*     delete mean; */
-/*     for(i = 0; i < numElems; i++) */
-/*       delete cov[i]; */
-/*     delete [] cov; */
-/*   } */
-  
-/*   // Functions which will be used for gaussian class in c++ */
-/*   // void train_gaussian(VECTOR_OF_F_VECTORS *features, F_VECTOR *mean, VECTOR_OF_F_VECTORS *cov); */
-/*   // float ComputProbability(F_VECTOR *mean, VECTOR_OF_F_VECTORS *cov, F_VECTOR *fvect, float prior, float probScaleFactor);   */
-/* }; */
 
 class ESHMM{
  public:
@@ -82,13 +55,15 @@ class ESHMM{
   F_VECTOR *prior; // prior probabilities
   int *numElemEachState;
   int MD;
-  int rowsTrans, rowsPrior;
+  int rowsTrans, rowsPrior, colsTrans;
  public:
   ESHMM();
-  ESHMM(int numStates, int DIM, int rowsTrans, int colsTrans, int rowsPrior, int colsPrior){
+
+  ESHMM(int numStates, int DIM, int rowsT, int colsT, int rowsP){
     hmmStates = numStates;
-    rowsTrans = rowsTrans;
-    rowsPrior = rowsPrior;
+    rowsTrans = rowsT;
+    colsTrans = colsT;
+    rowsPrior = rowsP;
     numElemEachState = (int *)calloc(numStates, sizeof(int ));
     // HMMstates is an array of pointers pointing to numStates Gaussian objects
     // first allocate numStates pointers to Gaussian object and then allocate Gaussian object for each pointer
@@ -100,28 +75,42 @@ class ESHMM{
     }
     //for(i = 0; i < numStates; i++)
     //HMMstates[i] = new GaussianDistribution(DIM) [numStates];
-    
-    trans = new F_VECTOR *[rowsTrans];
-    prior = new F_VECTOR *[rowsPrior];    
-    for(i = 0; i < rowsTrans; i++)
-      trans[i] = new F_VECTOR(colsTrans);    
-    for(i = 0; i < rowsPrior; i++)
-      prior[i] = new F_VECTOR(colsPrior);
+    printf("rowsTrans:%d colsTrans:%d rowsP:%d\n", rowsT, colsT, rowsP);
+    prior = new F_VECTOR(rowsP);
+    trans = new F_VECTOR *[rowsT];
+    for(i = 0; i < rowsT; i++)
+      trans[i] = new F_VECTOR(colsT);
   }
-    
+  
   ~ESHMM(){
     int i = 0;
     for(i = 0; i < rowsTrans; i++)
       delete [] trans[i];
-    for(i = 0; i < rowsPrior; i++)
-      delete [] prior[i];
     //for(i = 0; i < numStates; i++)
     //delete HMMstates[i];
-    delete [] prior;
+    delete prior;
     delete [] trans;
     vector<GaussianDistribution>().swap(HMMstates);
     free(numElemEachState);
   }
+ public:
+  void printPriorMat(ESHMM *mdHMM);
+
+  void printTransMat(ESHMM *mdHMM);
+
+  void FindNumElemEachState(ESHMM *mdHMM, int *path, int totalNumFeatures);
+
+  void DropEmptyStates(ESHMM *mdHMM, int *path, int T );
+
+  void InitializeHMMusingPath(ESHMM *mdHMM, int *path, VECTOR_OF_F_VECTORS *features, int totalNumFeatures);
+
+  void trainMDHMM(ESHMM *mdHMM, VECTOR_OF_F_VECTORS *features, int numf, double **post);
+
+  double mdHMMLogForwardBackward(ESHMM *mdHMM, VECTOR_OF_F_VECTORS *features, double **logp, int T, mat &gamma, rowvec &gamma1,
+				 mat &sumxi);
+  
+  void hmmLogViterbiWithMinDur(int *path, ESHMM *mdHMM, int T, double **B);
+  
   // functions which will be used by ESHMM class
   // 3. Build HMM given observation sequence training problem of hmm
   //eshmm* TrainESHMM(eshmm *hmm, VECTOR_OF_F_VECTORS *obserSeq, int *totalNumFeatures, int *stateSeq);
@@ -156,3 +145,31 @@ class ESHMM{
  * End:
  *                        End of front-end-types.h
  -------------------------------------------------------------------------*/
+
+/* class Gaussian{ */
+/*  public: */
+/*   F_VECTOR *mean; */
+/*   VECTOR_OF_F_VECTORS *cov; */
+/*   //constructor */
+/*  public: */
+/*   Gaussian(int DIM){     */
+/*     mean = new F_VECTOR(DIM); */
+/*     VECTOR_OF_F_VECTORS *cov = new F_VECTOR *[DIM]; */
+/*     int i = 0; */
+/*     for(i = 0; i < DIM; i++) */
+/*       cov[i] = new F_VECTOR(DIM);     */
+/*   } */
+/*   //destructor */
+/*   ~Gaussian(){ */
+/*     int numElems = mean->numElements; */
+/*     int i = 0; */
+/*     delete mean; */
+/*     for(i = 0; i < numElems; i++) */
+/*       delete cov[i]; */
+/*     delete [] cov; */
+/*   } */
+  
+/*   // Functions which will be used for gaussian class in c++ */
+/*   // void train_gaussian(VECTOR_OF_F_VECTORS *features, F_VECTOR *mean, VECTOR_OF_F_VECTORS *cov); */
+/*   // float ComputProbability(F_VECTOR *mean, VECTOR_OF_F_VECTORS *cov, F_VECTOR *fvect, float prior, float probScaleFactor);   */
+/* }; */

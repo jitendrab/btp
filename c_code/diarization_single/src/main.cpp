@@ -6,6 +6,7 @@ BTech, CSE, IIT Mandi
 #include "../include/preprocessing.h"
 
 #include "initialization.cpp"
+#include "log_forward_backward.cpp"
 
 int main(int argc, char *argv[]){
   if(argc < 3){
@@ -18,7 +19,7 @@ int main(int argc, char *argv[]){
   int                                  i = 0, j= 0, count = 0, TotalFeatures = 0,ret=0;
   char                                 line[512]; //to store the whole line    
   int                                  *flag;
-
+  
   VECTOR_OF_F_VECTORS                  *features; //check memory access (need to allocate more space)
   F_VECTOR                             *feat;
   
@@ -167,13 +168,13 @@ void printHMM(ESHMM *mdHMM){
   int i = 0, j = 0, k = 0;
   //print means
   for(i = 0; i < states; i++){
-    Mean = mdHMM->HMMstates[i].Mean(); // Obtain Mean Vector by calling object method
+    vec Mean = mdHMM->HMMstates[i].Mean(); // Obtain Mean Vector by calling object method
     Mean.print("printing Mean:\n");
     printf("\n");
   }
   //print Covariace Matrix
   for(i = 0; i < states; i++){
-    Cov = mdHMM->HMMstates[i].Covariance(); // Obtain Covariance Matrix by calling object method
+    mat Cov = mdHMM->HMMstates[i].Covariance(); // Obtain Covariance Matrix by calling object method
     Cov.print("Covariance Matrix:\n");
     printf("\n");
   }
